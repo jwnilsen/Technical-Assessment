@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h2>Health Catalyst - Senior Software Engineer Technical Assessment </h2>
+    <h4>This application was coded using ASP.NET MVC with Entity Framework Code First, LocalDB, Javascript/AJAX (for Search dialog) and Razor (for Admin dialogs).</h4>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Search Guide</h2>
+        <p>
+            To search for someone, click on the Search link above. You may enter an * (asterisk) to view all persons or enter a partial value to 
+            find and return all matching persons. This feature was implemented as a SPA view using Javascript/Ajax so that the page is never reloaded.
+            The search argument and all search results are passed as JSON objects. Search latency is simulated by displaying a spinner with a programatic delay of 5 seconds.
+        </p>
+     </div>
+    <div class="col-md-4">
+        <h2>Person Administration</h2>
+        <p>
+            To add, change, delete or view person entities, click on the Admin link above. There are currently 4 picture
+            images in the Content/PersonImages folder for association with any person entity. This feature was implement
+            using Razor views.
+        </p>
+
+    </div>
+    <div class="col-md-4">
+        <h2>Unit Tests</h2>
+        <p>
+            Unit Tests have been created for all PersonAgent services, Person Controller and Home Controller.
+            The Unit Tests for the PersonAgent services will test all Person Controller action functionality,
+            so the controller tests will only verify the controllers are responding and routing correctly. For 
+            each iteration of Unit Test execution, the database entities are dropped and recreated. These same 
+            entities are also provided for Code First seeding in the Migrations configuration.cs file.
+        </p>
+    </div>
+</div>

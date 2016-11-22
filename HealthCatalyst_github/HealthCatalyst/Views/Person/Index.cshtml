@@ -1,0 +1,56 @@
+﻿@model List<HealthCatalyst.Models.Person>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New Person", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Age</th>
+        <th>Interests</th>
+        <th></th>
+    </tr>
+
+@{ var toggle = "evenRow";
+}
+
+@foreach (var item in Model)
+{
+    toggle = toggle.Equals("oddRow") ? "evenRow" : "oddRow";
+
+    <tr class="@toggle">
+        <td>
+            @if ((item.Picture != null) && (item.Picture.FileName.Length > 0))
+            {
+                <img src="@(Url.Content(Constants.PersonImagePath) + item.Picture.FileName)">
+            }
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Address)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Age)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Interests)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+        </td>
+    </tr>
+}
+
+</table>
