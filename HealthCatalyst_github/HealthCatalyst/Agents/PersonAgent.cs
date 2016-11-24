@@ -1,6 +1,7 @@
 ﻿
 using HealthCatalyst.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Data;
 using System.Data.Entity;
@@ -10,6 +11,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.Mvc;
+using System.Web;
+using System.Security.Policy;
 
 namespace HealthCatalyst.Agents
 {
@@ -244,7 +247,7 @@ namespace HealthCatalyst.Agents
                 return jsonResult;
             }
 
-            // must have search argument value to continue
+            // must have a legitimate search argument value to continue
             if (searchArgs.Name == null)
             {
                 searchArgs.Name = string.Empty;
@@ -287,45 +290,23 @@ namespace HealthCatalyst.Agents
                 return jsonResult;
             }
 
-            // generate HTML for headers 
-            StringBuilder htmlData = new StringBuilder();
-            htmlData.Append("<table class='table'>");
-            htmlData.Append(" <tr><th></th>");
-            htmlData.Append("     <th>Name</th>");
-            htmlData.Append("     <th>Address</th>");
-            htmlData.Append("     <th>Age</th>");
-            htmlData.Append("     <th>Interests</th>");
-            htmlData.Append(" </tr>");
+            string contentUrl = Constants.PersonImagePath.Replace("~", "");
+            List<object> jsonPersons = new List<object>();
 
-            // generate HTML for all results found
-            string pictureUrl = Constants.PersonImagePath.Replace("~", string.Empty);
-            var toggle = "evenRow";
-            foreach (var person in persons)
+            foreach (var p in persons)
             {
-                if (toggle.Equals("oddRow"))
+                object jsonPerson = new
                 {
-                    toggle = "evenRow";
-                }
-                else
-                {
-                    toggle = "oddRow";
-                }
-                htmlData.Append(" <tr class='" + toggle + "'>");
-                htmlData.Append("     <td><img src = " + pictureUrl + person.Picture.FileName + "></td>");
-                htmlData.Append("     <td>" + person.Name + "</td>");
-                htmlData.Append("     <td>" + person.Address + "</td>");
-                htmlData.Append("     <td>" + person.Age + "</td>");
-                htmlData.Append("     <td>" + person.Interests + "</td>");
-                htmlData.Append(" </tr>");
+                    FileName = contentUrl + p.Picture.FileName,
+                    Name = p.Name,
+                    Address = p.Address,
+                    Age = p.Age,
+                    Interests = p.Interests
+                };
+                jsonPersons.Add(jsonPerson);
             }
+            jsonResult = JsonConvert.SerializeObject(jsonPersons);
 
-            htmlData.Append("</table>");
-            var jsonObj = new
-            {
-                Html = htmlData.ToString()
-            };
-
-            jsonResult = JsonConvert.SerializeObject(jsonObj);
             return jsonResult;
         }
 
