@@ -1,0 +1,162 @@
+﻿@model IEnumerable<HealthCatalyst.Models.Person>
+@{
+    ViewBag.Title = "Search Persons";
+}
+
+<div id="divFindPerson">
+    <form>
+        <h3>Search For Person</h3>
+        <hr />
+        <div>
+            <div class="row">
+                <div class="col-md-1 text-right">
+                    <label>Name</label>
+                </div>
+                <div class="col-md-3">
+                    <input id="txtSearchName" type="text" value="" name="SearchName"
+                           class="form-control text-box single-line" autofocus="autofocus" />
+                </div>
+                <div class="col-md-0">
+                    <input id="btnFind" type="button" class="btn btn-default" value="Find" onclick="getSearchResults()" />
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-1">
+                </div>
+                <div class="col-md-7">
+                    <label id="lblErrorMsg" class="text-danger"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-1">
+                </div>
+                <div id="spinner" class="col-md-10">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // initialize during page load
+    var resultsOk = false;
+    var jsonArgs = "";
+
+    // initiate spinner
+    var opts = {
+        lines: 12            // The number of lines to draw
+      , length: 15           // The length of each line
+      , width: 7             // The line thickness
+      , radius: 7            // The radius of the inner circle
+      , scale: 1             // Scales overall size of the spinner
+      , corners: 1           // Corner roundness (0..1)
+      , color: '#rrggbb'     // #rgb or #rrggbb or array of colors
+      , opacity: 0.25        // Opacity of the lines
+      , rotate: 40           // The rotation offset
+      , direction: 1         // 1: clockwise, -1: counterclockwise
+      , speed: 1.0           // Rounds per second
+      , trail: 60            // Afterglow percentage
+      , fps: 20              // Frames per second when using setTimeout() as a fallback for CSS
+      , zIndex: 2e9          // The z-index (defaults to 2000000000)
+      , className: 'spinner' // The CSS class to assign to the spinner
+      , top: '50%'           // Top position relative to parent
+      , left: '50%'          // Left position relative to parent
+      , shadow: true         // Whether to render a shadow
+      , hwaccel: false       // Whether to use hardware acceleration
+      , position: 'absolute' // Element positioning
+    }
+    var spinnerTarget = document.getElementById('spinner')
+    var spinner = new Spinner(opts);
+
+    function startSpinner()
+    {
+        spinner.spin(spinnerTarget);
+    }
+
+    function stopSpinner() {
+        spinner.stop();
+    }
+
+    function getSearchResults()
+    {
+        // get the search argument
+        var searchName = $('#txtSearchName').val();
+
+        // if the search argument is blank - force user enter something before proceeding any further
+        if (searchName == null || searchName.toString().trim() == '')
+        {
+            $('#lblErrorMsg').text('Please enter a full or partial name');
+            return;
+        }
+
+        //var jsonArgs = "{'name':'" + searchName + "'}";
+        jsonArgs = JSON.stringify({ Name: searchName });
+
+
+        // make sure any previous error message is cleared
+        $('#lblErrorMsg').text('');
+
+        // if there were any previous search results - clear them before next search
+        if (resultsOk)
+        {
+            $('#divPersonList').empty();
+            $('#divPersonList').hide();
+        }
+
+        // start the wait spinner
+        startSpinner();
+
+        // simulate a wait for results set
+        window.setTimeout(callSearchSvc, 5000);
+    }
+
+    function callSearchSvc()
+    {
+        // call host service to see if there are any matching database entries
+        $.ajax({
+            url: '@Url.Action("SearchPersons")',
+            type: 'POST',
+            cache: 'false',
+            data: jsonArgs,
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            success: function (result) {
+                try {
+                    if (result.Error != null) {
+                        resultsOk = false;
+                        $('#lblErrorMsg').text(result.Error);
+                        stopSpinner();
+                        return;
+                    }
+                    else if (result.NotFound != null) {
+                        resultsOk = false;
+                        $('#lblErrorMsg').text('There were no results found for this request');
+                        stopSpinner();
+                        return;
+                    }
+                }
+                catch (exception) {
+                    $('#lblErrorMsg').text('There was an error parsing the JSON returned from the host');
+                    stopSpinner();
+                    return;
+                }
+                
+                // results were present - display them
+                resultsOk = true;
+                $('#divPersonList').append(result.Html);
+                $('#divPersonList').show();
+                stopSpinner();
+            },
+            error: function () {
+                resultsOk = false;
+                $('#lblErrorMsg').text('There was an unknown error calling the host during this request');
+                stopSpinner();
+            }
+        });
+    }
+</script>
+
+<p></p>
+<div id="divPersonList">
+</div>
