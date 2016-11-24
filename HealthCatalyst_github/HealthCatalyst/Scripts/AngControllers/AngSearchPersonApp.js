@@ -7,7 +7,6 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
             $scope.msg = ' ';
             $scope.error = ' ';
             $scope.isResult = false;
-            //$('#divPersonList').hide();
             $scope.jsonArgs = "";
 
             // These options are for the spinner
@@ -42,7 +41,7 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
                 $scope.error = ' ';
                 $scope.isResult = false;
 
-                // if the search argument is blank - force user enter something before proceeding any further
+                // if the search argument is blank - force user to enter something before proceeding any further
                 if ($scope.searchCriteria == undefined || $scope.searchCriteria.toString().trim() == '') {
                     $scope.error = 'Please enter a full or partial name';
                     $('#searchCriteria').focus();
@@ -60,68 +59,53 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
 
             $scope.CallSearchSvc = function () {
                 $('#searchCriteria').focus();
-                // call host service to see if there are any matching database entries
-                $.ajax({ 
-                    url: '/Person/SearchPersons',
-                    type: 'POST',
-                    data: $scope.jsonObj,
-                    contentType: "application/json",
-                    success: function (results) {
-                        $scope.successPost(results)
-                    },
-                    error: function (results) {
-                        $scope.errorPost(results)
-                    }
-                });
+                $http.post('/Person/SearchPersons', $scope.jsonObj)
+                     .success(function (results) {
+                         $scope.successPost(results);
+                     })
+                     .error(function (results) {
+                         $scope.errorPost(results);
+                     });
             }; // end callSearchSvc
 
             // evaluate success from Http call
             $scope.successPost = function (results) {
-                // using this because of AJAX call
-                // need it to be aware of any additional $scope variable modifications
-                $scope.$apply( function () {
-                    try {
-                        // convert JSON string into JSON objects
-                        $scope.jsonObjs = JSON.parse(results);
-                        if ($scope.jsonObjs.Error != undefined) {
-                            $scope.error = jsonObjs.Error;
-                            $scope.stopSpinner();
-                            return;
-                        }
-                        if ($scope.jsonObjs.NotFound != undefined) {
-                            //$('#lblErrorMsg').text('There were no results found for this request');
-                            $scope.error = 'There were no results found for this request';
-                            $scope.stopSpinner();
-                            return;
-                        }
-                    }
-                    catch (Exception) {
-                        var errMsg = Exception.message;
-                        $scope.error = 'There was an error parsing the JSON returned from the host';
+                try {
+                    if (results.Error != undefined) {
+                        $scope.error = results.Error;
                         $scope.stopSpinner();
                         return;
                     }
-
-                    // results were present - display them
-                    $scope.jsonObjs = JSON.parse(results);
-                    $scope.isResult = true;
-
-                    // clear last results
-                    $scope.Persons = [];
-
-                    // render new results
-                    $scope.Persons = $scope.jsonObjs;
-                    if ($scope.Persons.length != undefined)
-                    {
-                        $scope.msg = 'Found ' + $scope.Persons.length + ' search results';
+                    if (results.NotFound != undefined) {
+                        $scope.error = 'There were no results found for this request';
+                        $scope.stopSpinner();
+                        return;
                     }
+                }
+                catch (Exception) {
+                    var errMsg = Exception.message;
+                    $scope.error = 'There was an error parsing the JSON returned from the host=>' + errMsg;
                     $scope.stopSpinner();
-                })
+                    return;
+                }
+
+                // results were present - display them
+                $scope.isResult = true;
+
+                // clear last results
+                $scope.Persons = [];
+
+                // render new results
+                $scope.Persons = results;
+                if ($scope.Persons.length != undefined) {
+                    $scope.msg = 'Found ' + $scope.Persons.length + ' search results';
+                }
+                $scope.stopSpinner();
             };
             
             // evaluate error from Http call
             $scope.errorPost = function (result) {
-                $scope.error = 'There was an error parsing the JSON returned from the host';
+                $scope.error = 'There was an error during POST to server=>' + result;
                 stopSpinner();
                 $scope.$apply();
             };
