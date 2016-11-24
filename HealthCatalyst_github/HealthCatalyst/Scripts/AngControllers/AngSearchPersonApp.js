@@ -36,21 +36,11 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
             $scope.spinnerTarget = document.getElementById('spinner')
             $scope.spinner = new Spinner($scope.opts);
 
-            $scope.localjsonObjs = [
-                { "Name": "Sanders, John", "Address": "Salt Lake City", "Age": "5", "Interests": "None" },
-                { "Name": "Willsey, Bob", "Address": "West Valley", "Age": "63", "Interests": "Too Many" },
-                { "Name": "Moore, Mandy", "Address": "Provoy", "Age": "31", "Interests": "Life" }];
-            //alert("1st=>" + $scope.fakeResults[0].toString() + "2nd=>" + $scope.fakeResults[1].toString()) ;
-
             // called from form submit
             $scope.GetSearchResults = function () {
                 $scope.msg = ' ';
                 $scope.error = ' ';
                 $scope.isResult = false;
-                //$('#divPersonList').hide();
-
-                // add dummy entry
-                //$scope.Persons = [{ "Name": "", "Address": "", "Age": "", "Interests": "" }];
 
                 // if the search argument is blank - force user enter something before proceeding any further
                 if ($scope.searchCriteria == undefined || $scope.searchCriteria.toString().trim() == '') {
@@ -63,11 +53,6 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
 
                 // start the 'working' spinner
                 $scope.startSpinner();
-
-                //$('#divPersonList').show();
-                //$scope.Persons = $scope.fakeResults;
-                //stopSpinner();
-                //return;
  
                 //simulate a wait for results set
                 $window.setTimeout($scope.CallSearchSvc, 2500);
@@ -99,47 +84,38 @@ appModule.controller('SearchPersonsCntrl', ['$scope', '$http', '$window',
                         // convert JSON string into JSON objects
                         $scope.jsonObjs = JSON.parse(results);
                         if ($scope.jsonObjs.Error != undefined) {
-                            //$('#lblErrorMsg').text(result.Error);
                             $scope.error = jsonObjs.Error;
                             $scope.stopSpinner();
-                            //$scope.$apply();
                             return;
                         }
                         if ($scope.jsonObjs.NotFound != undefined) {
                             //$('#lblErrorMsg').text('There were no results found for this request');
                             $scope.error = 'There were no results found for this request';
                             $scope.stopSpinner();
-                            //$scope.$apply();
                             return;
                         }
                     }
                     catch (Exception) {
                         var errMsg = Exception.message;
-                        //$('#lblErrorMsg').text('There was an error parsing the JSON returned from the host');
                         $scope.error = 'There was an error parsing the JSON returned from the host';
                         $scope.stopSpinner();
-                        //$scope.$apply();
                         return;
                     }
 
                     // results were present - display them
                     $scope.jsonObjs = JSON.parse(results);
                     $scope.isResult = true;
-                    //$('#divPersonList').show();
 
                     // clear last results
                     $scope.Persons = [];
 
                     // render new results
                     $scope.Persons = $scope.jsonObjs;
-                    //$scope.Persons = $scope.localjsonObjs;
-
                     if ($scope.Persons.length != undefined)
                     {
                         $scope.msg = 'Found ' + $scope.Persons.length + ' search results';
                     }
                     $scope.stopSpinner();
-                    //$scope.$apply();
                 })
             };
             
